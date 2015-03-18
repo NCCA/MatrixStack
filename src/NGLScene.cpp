@@ -47,7 +47,8 @@ void NGLScene::resizeEvent(QResizeEvent *_event )
   int h=_event->size().height();
   // set the viewport for openGL
   glViewport(0,0,w,h);
-  m_projection=ngl::perspective(15,(float)w/h,0.05,350);
+  m_stack.setView(ngl::perspective(15,(float)w/h,0.05,350));
+
   // now set the camera size values as the screen size has changed
   renderLater();
   }
@@ -76,12 +77,11 @@ void NGLScene::initialize()
   ngl::Vec3 from(2,2,2);
   ngl::Vec3 to(0,0,0);
   ngl::Vec3 up(0,1,0);
-  m_view=ngl::lookAt(from,to,up);
-  std::cout<<m_view<<"\n";
   int w=this->size().width();
   int h=this->size().height();
+  m_stack.setView(ngl::lookAt(from,to,up));
 
-  m_projection=ngl::perspective(45,(float)w/h,0.05,350);
+  m_stack.setProjection( ngl::perspective(45,(float)w/h,0.05,350));
   // as re-size is not explicitly called we need to do this.
   glViewport(0,0,width(),height());
 
@@ -97,8 +97,8 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat3 normalMatrix;
   ngl::Mat4 M;
   M=m_mouseGlobalTX;
-  MV=  M*m_view;
-  MVP= MV*m_projection;
+  MV=  M*m_stack.MV();
+  MVP= m_stack.MVP();
   normalMatrix=MV;
   normalMatrix.inverse();
   shader->setShaderParamFromMat4("MVP",MVP);
@@ -115,26 +115,40 @@ void NGLScene::render()
   (*shader)["nglDiffuseShader"]->use();
 
   // Rotation based on the mouse position for our global transform
-  ngl::Transformation trans;
-  ngl::Mat4 rotX;
-  ngl::Mat4 rotY;
-  // create the rotation matrices
-  rotX.rotateX(m_spinXFace);
-  rotY.rotateY(m_spinYFace);
-  // multiply the rotations
-  m_mouseGlobalTX=rotY*rotX;
-  // add the translations
-  m_mouseGlobalTX.m_m[3][0] = m_modelPos.m_x;
-  m_mouseGlobalTX.m_m[3][1] = m_modelPos.m_y;
-  m_mouseGlobalTX.m_m[3][2] = m_modelPos.m_z;
+  m_stack.pushMatrix();
+  {
+    m_stack.rotate(m_spinXFace,m_spinYFace,0);
+    m_stack.translate(m_modelPos.m_x,m_modelPos.m_y,m_modelPos.m_z);
 
-   // get the VBO instance and draw the built in teapot
-  ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
+     // get the VBO instance and draw the built in teapot
+    ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
   // draw
-  loadMatricesToShader();
-  prim->draw("troll");
-}
+  m_stack.pushMatrix();
+  {
+    loadMatricesToShader();
+    prim->draw("troll");
+  }
+  m_stack.popMatrix();
+  m_stack.pushMatrix();
+  {
+    m_stack.scale(0.5,0.5,0.5);
+    m_stack.translate(-1.0,0.0,-1.0);
+    m_stack.rotate(45,0,1,0);
+    loadMatricesToShader();
+    prim->draw("troll");
 
+    m_stack.translate(2.0,0.0,-1.0);
+    loadMatricesToShader();
+    prim->draw("troll");
+
+  }
+  m_stack.popMatrix();
+
+
+
+  m_stack.popMatrix();
+}
+}
 //----------------------------------------------------------------------------------------------------------------------
 void NGLScene::mouseMoveEvent (QMouseEvent * _event)
 {
