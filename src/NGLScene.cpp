@@ -28,7 +28,9 @@ NGLScene::NGLScene(QWindow *_parent) : OpenGLWindow(_parent)
   // mouse rotation values set to 0
   m_spinXFace=0;
   m_spinYFace=0;
-  setTitle("Using ngl::lookAt() and ngl::perspective()");
+  setTitle("A Matrix Stack");
+  m_rot=0.0f;
+  m_freq=1.0;
 }
 
 
@@ -74,7 +76,7 @@ void NGLScene::initialize()
   shader->setShaderParam3f("lightPos",1,1,1);
   shader->setShaderParam4f("lightDiffuse",1,1,1,1);
 
-  ngl::Vec3 from(2,2,2);
+  ngl::Vec3 from(0,2,2);
   ngl::Vec3 to(0,0,0);
   ngl::Vec3 up(0,1,0);
   int w=this->size().width();
@@ -84,7 +86,9 @@ void NGLScene::initialize()
   m_stack.setProjection( ngl::perspective(45,(float)w/h,0.05,350));
   // as re-size is not explicitly called we need to do this.
   glViewport(0,0,width(),height());
-
+  ngl::VAOPrimitives::instance()->createLineGrid("grid",10,10,100);
+  startTimer(10);
+  ngl::VAOPrimitives::instance()->createSphere("sphere",1.0,20);
 }
 
 
@@ -113,41 +117,71 @@ void NGLScene::render()
   // grab an instance of the shader manager
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   (*shader)["nglDiffuseShader"]->use();
+  shader->setShaderParam4f("Colour",1,1,1,1);
+
 
   // Rotation based on the mouse position for our global transform
   m_stack.pushMatrix();
-  {
-    m_stack.rotate(m_spinXFace,m_spinYFace,0);
-    m_stack.translate(m_modelPos.m_x,m_modelPos.m_y,m_modelPos.m_z);
-
+    m_stack.translate(0,0,-m_modelPos.m_z);
+    m_stack.translate(m_modelPos.m_x,m_modelPos.m_y,0);
+    m_stack.rotate(m_spinXFace,1,0,0);
+    m_stack.rotate(m_spinYFace,0,1,0);
      // get the VBO instance and draw the built in teapot
     ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
   // draw
-  m_stack.pushMatrix();
-  {
-    loadMatricesToShader();
-    prim->draw("troll");
-  }
+    m_stack.pushMatrix();
+      m_stack.translate(0,-0.65,0);
+      loadMatricesToShader();
+      prim->draw("troll");
+    m_stack.popMatrix();
+
+    m_stack.pushMatrix();
+      m_stack.scale(0.5,0.5,0.5);
+      m_stack.translate(-1.0,-1.85,-1.0);
+      m_stack.rotate(45,0,1,0);
+      loadMatricesToShader();
+      prim->draw("troll");
+    m_stack.popMatrix();
+
+    m_stack.pushMatrix();
+      m_stack.scale(0.5,0.5,0.5);
+      m_stack.translate(1.0,-1.85,-1.0);
+      loadMatricesToShader();
+      prim->draw("troll");
+    m_stack.popMatrix();
+
+
+    for(float i=0; i<2*M_PI; i+=0.01)
+    {
+      m_stack.pushMatrix();
+        float x=cos(i)*2.0;
+        float z=sin(i)*2.0;
+        float y=sin(i*m_freq)*0.5;
+        shader->setShaderParam4f("Colour",x,y,z,1);
+
+        m_stack.rotate(m_rot,0,1,0);
+        m_stack.translate(x,y,z);
+        m_stack.pushMatrix();
+          m_stack.scale(0.04,0.04,0.04);
+          if(i>180)
+            m_stack.rotate(m_rot*2,0,0,1);
+          else
+            m_stack.rotate(m_rot*2,0,1,0);
+
+
+          loadMatricesToShader();
+          prim->draw("sphere");
+        m_stack.popMatrix();
+      m_stack.popMatrix();
+    }
+
+    m_stack.pushMatrix();
+      m_stack.translate(0.0,-1.2,0.0);
+      loadMatricesToShader();
+      prim->draw("grid");
+   m_stack.popMatrix();
   m_stack.popMatrix();
-  m_stack.pushMatrix();
-  {
-    m_stack.scale(0.5,0.5,0.5);
-    m_stack.translate(-1.0,0.0,-1.0);
-    m_stack.rotate(45,0,1,0);
-    loadMatricesToShader();
-    prim->draw("troll");
 
-    m_stack.translate(2.0,0.0,-1.0);
-    loadMatricesToShader();
-    prim->draw("troll");
-
-  }
-  m_stack.popMatrix();
-
-
-
-  m_stack.popMatrix();
-}
 }
 //----------------------------------------------------------------------------------------------------------------------
 void NGLScene::mouseMoveEvent (QMouseEvent * _event)
@@ -251,9 +285,21 @@ void NGLScene::keyPressEvent(QKeyEvent *_event)
   case Qt::Key_F : showFullScreen(); break;
   // show windowed
   case Qt::Key_N : showNormal(); break;
+  case Qt::Key_I : m_freq+=1; break;
+  case Qt::Key_O : m_freq-=1; break;
+
   default : break;
   }
   // finally update the GLWindow and re-draw
   //if (isExposed())
     renderLater();
 }
+
+void NGLScene::timerEvent(QTimerEvent *_event)
+{
+  m_rot+=1.0f;
+  renderLater();
+}
+
+
+

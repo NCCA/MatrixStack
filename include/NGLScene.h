@@ -123,6 +123,11 @@ private:
     //----------------------------------------------------------------------------------------------------------------------
     void wheelEvent( QWheelEvent *_event);
 
+    void timerEvent(QTimerEvent *_event);
+
+    ngl::Real m_rot;
+    ngl::Real m_freq;
+
 
 };
 
