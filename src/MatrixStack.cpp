@@ -2,12 +2,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <ngl/NGLStream.h>
-MatrixStack::MatrixStack(int _depth)
-{
-  m_stack.resize(_depth);
-  m_top=0;
-  m_depth=_depth;
-}
+
 
 void MatrixStack::pushMatrix()
 {
@@ -29,25 +24,8 @@ void MatrixStack::popMatrix()
   {
     std::cerr<<"Matrix stack underflow \n";
     exit(EXIT_FAILURE);
-
   }
-
 }
-
-void MatrixStack::setView(const ngl::Mat4 &_v)
-{
-  m_view=_v;
-  std::cout<<"view \n"<<m_view<<"\n";
-
-}
-
-void MatrixStack::setProjection(const ngl::Mat4 &_p)
-{
-  m_projection=_p;
-  std::cout<<"proj \n"<<m_projection<<"\n";
-
-}
-
 
 
 void MatrixStack::rotate(float _x, float _y, float _z)
@@ -65,7 +43,6 @@ void MatrixStack::rotate(float _angle,float _x, float _y, float _z)
   ngl::Mat4 r;
   r.euler(_angle,_x,_y,_z);
   m_stack[m_top]*=r;
-
 }
 
 void MatrixStack::translate(float _x, float _y, float _z)
@@ -73,7 +50,6 @@ void MatrixStack::translate(float _x, float _y, float _z)
   ngl::Mat4 t;
   t.translate(_x,_y,_z);
   m_stack[m_top]*=t;
-
 }
 
 void MatrixStack::scale(float _x, float _y, float _z)
