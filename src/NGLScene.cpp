@@ -3,9 +3,7 @@
 
 #include "NGLScene.h"
 #include <ngl/Camera.h>
-#include <ngl/Light.h>
 #include <ngl/Transformation.h>
-#include <ngl/Material.h>
 #include <ngl/NGLInit.h>
 #include <ngl/VAOPrimitives.h>
 #include <ngl/ShaderLib.h>
@@ -81,14 +79,15 @@ void NGLScene::initialize()
   ngl::Vec3 up(0,1,0);
   int w=this->size().width();
   int h=this->size().height();
+  // set the view matrix for the stack
   m_stack.setView(ngl::lookAt(from,to,up));
-
+  // set the projection for the stack
   m_stack.setProjection( ngl::perspective(45,(float)w/h,0.05,350));
   // as re-size is not explicitly called we need to do this.
   glViewport(0,0,width(),height());
   ngl::VAOPrimitives::instance()->createLineGrid("grid",10,10,100);
-  startTimer(10);
   ngl::VAOPrimitives::instance()->createSphere("sphere",1.0,20);
+  startTimer(10);
 }
 
 
@@ -99,13 +98,9 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
-  ngl::Mat4 M;
-  M=m_mouseGlobalTX;
-  MV=  M*m_stack.MV();
-  MVP= m_stack.MVP();
-  normalMatrix=MV;
+  normalMatrix=m_stack.MV();
   normalMatrix.inverse();
-  shader->setShaderParamFromMat4("MVP",MVP);
+  shader->setShaderParamFromMat4("MVP",m_stack.MVP());
   shader->setShaderParamFromMat3("normalMatrix",normalMatrix);
  }
 
