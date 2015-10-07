@@ -14,3 +14,6 @@ The model element of the stack is calculated by creating a matrix for the transf
 
 
 
+
+
+Note this branch is an older version and will not be maintained as it uses the old OpenGL widget
