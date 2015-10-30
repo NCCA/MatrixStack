@@ -40,15 +40,13 @@ NGLScene::~NGLScene()
 }
 
 
-void NGLScene::resizeGL(int _w, int _h)
+void NGLScene::resizeGL(QResizeEvent *_event)
 {
-  // set the viewport for openGL we need to take into account retina display
-  // etc by using the pixel ratio as a multiplyer
-  glViewport(0,0,_w*devicePixelRatio(),_h*devicePixelRatio());
-  m_stack.setProjection( ngl::perspective(45,(float)_w/_h,0.05,350));
+  m_width=_event->size().width()*devicePixelRatio();
+  m_height=_event->size().height()*devicePixelRatio();
 
-  // now set the camera size values as the screen size has changed
-  update();
+  m_stack.setProjection( ngl::perspective(45.0f,(float)width()/height(),0.05f,350.0f));
+
 }
 
 
@@ -107,7 +105,7 @@ void NGLScene::paintGL()
 {
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+  glViewport(0,0,m_width,m_height);
   // grab an instance of the shader manager
   ngl::ShaderLib *shader=ngl::ShaderLib::instance();
   (*shader)["nglDiffuseShader"]->use();
