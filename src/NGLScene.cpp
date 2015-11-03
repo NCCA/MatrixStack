@@ -44,12 +44,15 @@ void NGLScene::resizeGL(QResizeEvent *_event)
 {
   m_width=_event->size().width()*devicePixelRatio();
   m_height=_event->size().height()*devicePixelRatio();
-
   m_stack.setProjection( ngl::perspective(45.0f,(float)width()/height(),0.05f,350.0f));
-
 }
 
-
+void NGLScene::resizeGL(int _w , int _h)
+{
+  m_width=_w*devicePixelRatio();
+  m_height=_h*devicePixelRatio();
+  m_stack.setProjection( ngl::perspective(45.0f,(float)width()/height(),0.05f,350.0f));
+}
 
 
 void NGLScene::initializeGL()
