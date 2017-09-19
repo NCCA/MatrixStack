@@ -3,7 +3,6 @@
 #include <cstdlib>
 #include <ngl/NGLStream.h>
 
-
 void MatrixStack::pushMatrix()
 {
   if(++m_top< m_depth)

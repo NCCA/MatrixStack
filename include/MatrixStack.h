@@ -7,6 +7,7 @@
 /// transformations in a modern GL context
 //----------------------------------------------------------------------------------------------------------------------
 constexpr size_t s_stackSize=40;
+
 class MatrixStack
 {
   public :
