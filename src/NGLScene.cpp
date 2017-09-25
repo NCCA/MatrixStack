@@ -78,8 +78,7 @@ void NGLScene::loadMatricesToShader()
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
-  normalMatrix=m_stack.MV();
-  normalMatrix.inverse();
+  normalMatrix=m_stack.MV().inverse().transpose();
   shader->setUniform("MVP",m_stack.MVP());
   shader->setUniform("normalMatrix",normalMatrix);
  }
