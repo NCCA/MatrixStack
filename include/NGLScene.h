@@ -1,12 +1,10 @@
 #ifndef NGLSCENE_H_
 #define NGLSCENE_H_
-#include <ngl/Camera.h>
-#include <ngl/Colour.h>
-#include <ngl/Light.h>
+#include <QOpenGLWindow>
 #include <ngl/Text.h>
+#include <ngl/Vec3.h>
 #include "MatrixStack.h"
 #include "WindowParams.h"
-#include <QOpenGLWindow>
 #include <memory>
 
 //----------------------------------------------------------------------------------------------------------------------
