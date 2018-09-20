@@ -19,7 +19,7 @@ void MatrixStack::pushMatrix()
 void MatrixStack::popMatrix()
 {
   m_stack[m_top].identity();
-  if(--m_top<0 )
+  if(--m_top<=0 )
   {
     std::cerr<<"Matrix stack underflow \n";
     exit(EXIT_FAILURE);
