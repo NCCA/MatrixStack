@@ -39,19 +39,17 @@ void NGLScene::initializeGL()
   // we need to initialise the NGL lib which will load all of the OpenGL functions, this must
   // be done once we have a valid GL context but before we call any GL commands. If we dont do
   // this everything will crash
-  ngl::NGLInit::instance();
+  ngl::NGLInit::initalize();
   glClearColor(0.4f, 0.4f, 0.4f, 1.0f);			   // Grey Background
   // enable depth testing for drawing
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_MULTISAMPLE);
    // now to load the shader and set the values
   // grab an instance of shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["nglDiffuseShader"]->use();
-
-  shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
-  shader->setUniform("lightPos",1.0f,1.0f,1.0f);
-  shader->setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
+  ngl::ShaderLib::use("nglDiffuseShader");
+  ngl::ShaderLib::setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("lightPos",1.0f,1.0f,1.0f);
+  ngl::ShaderLib::setUniform("lightDiffuse",1.0f,1.0f,1.0f,1.0f);
 
   ngl::Vec3 from(0,2,5);
   ngl::Vec3 to(0,0,0);
@@ -64,22 +62,21 @@ void NGLScene::initializeGL()
   m_stack.setProjection( ngl::perspective(45.0f,static_cast<float>(w)/h,0.05f,350.0f));
   // as re-size is not explicitly called we need to do this.
   glViewport(0,0,width(),height());
-  ngl::VAOPrimitives::instance()->createLineGrid("grid",10,10,100);
-  ngl::VAOPrimitives::instance()->createSphere("sphere",1.0,20);
+  ngl::VAOPrimitives::createLineGrid("grid",10,10,100);
+  ngl::VAOPrimitives::createSphere("sphere",1.0,20);
   startTimer(10);
 }
 
 
 void NGLScene::loadMatricesToShader()
 {
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
 
   ngl::Mat4 MV;
   ngl::Mat4 MVP;
   ngl::Mat3 normalMatrix;
   normalMatrix=m_stack.MV().inverse().transpose();
-  shader->setUniform("MVP",m_stack.MVP());
-  shader->setUniform("normalMatrix",normalMatrix);
+  ngl::ShaderLib::setUniform("MVP",m_stack.MVP());
+  ngl::ShaderLib::setUniform("normalMatrix",normalMatrix);
  }
 
 void NGLScene::paintGL()
@@ -87,10 +84,8 @@ void NGLScene::paintGL()
   // clear the screen and depth buffer
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glViewport(0,0,m_win.width,m_win.height);
-  // grab an instance of the shader manager
-  ngl::ShaderLib *shader=ngl::ShaderLib::instance();
-  (*shader)["nglDiffuseShader"]->use();
-  shader->setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
+  ngl::ShaderLib::use("nglDiffuseShader");
+  ngl::ShaderLib::setUniform("Colour",1.0f,1.0f,1.0f,1.0f);
 
 
   // Rotation based on the mouse position for our global transform
@@ -99,13 +94,11 @@ void NGLScene::paintGL()
     m_stack.translate(m_modelPos.m_x,m_modelPos.m_y,0);
     m_stack.rotate(m_win.spinXFace,1,0,0);
     m_stack.rotate(m_win.spinYFace,0,1,0);
-     // get the VBO instance and draw the built in teapot
-    ngl::VAOPrimitives *prim=ngl::VAOPrimitives::instance();
   // draw
     m_stack.pushMatrix();
       m_stack.translate(0,-0.65f,0);
       loadMatricesToShader();
-      prim->draw("troll");
+      ngl::VAOPrimitives::draw("troll");
     m_stack.popMatrix();
 
     m_stack.pushMatrix();
@@ -113,14 +106,14 @@ void NGLScene::paintGL()
       m_stack.translate(-1.0,-1.85f,-1.0);
       m_stack.rotate(45,0,1,0);
       loadMatricesToShader();
-      prim->draw("troll");
+      ngl::VAOPrimitives::draw("troll");
     m_stack.popMatrix();
 
     m_stack.pushMatrix();
       m_stack.scale(0.5,0.5,0.5);
       m_stack.translate(1.0,-1.85f,-1.0);
       loadMatricesToShader();
-      prim->draw("troll");
+      ngl::VAOPrimitives::draw("troll");
     m_stack.popMatrix();
 
 
@@ -130,7 +123,7 @@ void NGLScene::paintGL()
         float x=cosf(i)*2.0f;
         float z=sinf(i)*2.0f;
         float y=sinf(i*m_freq)*0.5f;
-        shader->setUniform("Colour",x,y,z,1.0f);
+        ngl::ShaderLib::setUniform("Colour",x,y,z,1.0f);
 
         m_stack.rotate(m_rot,0,1,0);
         m_stack.translate(x,y,z);
@@ -143,7 +136,7 @@ void NGLScene::paintGL()
 
 
           loadMatricesToShader();
-          prim->draw("sphere");
+          ngl::VAOPrimitives::draw("sphere");
         m_stack.popMatrix();
       m_stack.popMatrix();
     }
@@ -151,7 +144,7 @@ void NGLScene::paintGL()
     m_stack.pushMatrix();
       m_stack.translate(0.0,-1.2f,0.0);
       loadMatricesToShader();
-      prim->draw("grid");
+      ngl::VAOPrimitives::draw("grid");
    m_stack.popMatrix();
   m_stack.popMatrix();
 

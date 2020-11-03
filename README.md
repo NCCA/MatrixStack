@@ -12,5 +12,14 @@ the top() method will access the current model transformation from the stack.
 
 The model element of the stack is calculated by creating a matrix for the transformation and then post multiplying this by the top of the stack.
 
+To build do the following
+
+```
+mkdir build
+cd build
+cmake -DCMAKE_TOOLCHAIN_FILE=[path to vcpkg install]/scripts/buildsystems/vcpkg.cmake ..
+make
+```
+
 
 
